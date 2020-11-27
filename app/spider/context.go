@@ -2,6 +2,7 @@ package spider
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"mime"
 	"net/http"
@@ -11,11 +12,11 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html/charset"
 
 	"github.com/henrylee2cn/pholcus/app/downloader/request"
 	"github.com/henrylee2cn/pholcus/app/pipeline/collector/data"
+	"github.com/henrylee2cn/pholcus/common/goquery"
 	"github.com/henrylee2cn/pholcus/common/util"
 	"github.com/henrylee2cn/pholcus/logs"
 )
@@ -53,11 +54,14 @@ func GetContext(sp *Spider, req *request.Request) *Context {
 }
 
 func PutContext(ctx *Context) {
+	if ctx.Response != nil {
+		ctx.Response.Body.Close() // too many open files bug remove
+		ctx.Response = nil
+	}
 	ctx.items = ctx.items[:0]
 	ctx.files = ctx.files[:0]
 	ctx.spider = nil
 	ctx.Request = nil
-	ctx.Response = nil
 	ctx.text = nil
 	ctx.dom = nil
 	ctx.err = nil
@@ -215,8 +219,8 @@ func (self *Context) Output(item interface{}, ruleName ...string) {
 }
 
 // 输出文件。
-// name指定文件名，为空时默认保持原文件名不变。
-func (self *Context) FileOutput(name ...string) {
+// nameOrExt指定文件名或仅扩展名，为空时默认保持原文件名（包括扩展名）不变。
+func (self *Context) FileOutput(nameOrExt ...string) {
 	// 读取完整文件流
 	bytes, err := ioutil.ReadAll(self.Response.Body)
 	self.Response.Body.Close()
@@ -229,19 +233,21 @@ func (self *Context) FileOutput(name ...string) {
 	_, s := path.Split(self.GetUrl())
 	n := strings.Split(s, "?")[0]
 
-	baseName := strings.Split(n, ".")[0]
-	ext := path.Ext(n)
+	var baseName, ext string
 
-	if len(name) > 0 {
-		p, n := path.Split(name[0])
-		if baseName2 := strings.Split(n, ".")[0]; baseName2 != "" {
+	if len(nameOrExt) > 0 {
+		p, n := path.Split(nameOrExt[0])
+		ext = path.Ext(n)
+		if baseName2 := strings.TrimSuffix(n, ext); baseName2 != "" {
 			baseName = p + baseName2
 		}
-		if ext == "" {
-			ext = path.Ext(n)
-		}
 	}
-
+	if baseName == "" {
+		baseName = strings.TrimSuffix(n, path.Ext(n))
+	}
+	if ext == "" {
+		ext = path.Ext(n)
+	}
 	if ext == "" {
 		ext = ".html"
 	}
@@ -305,10 +311,17 @@ func (self *Context) Aid(aid map[string]interface{}, ruleName ...string) interfa
 
 	_, rule, found := self.getRule(ruleName...)
 	if !found {
-		logs.Log.Error("蜘蛛 %s 调用Aid()时，指定的规则名不存在！", self.spider.GetName())
+		if len(ruleName) > 0 {
+			logs.Log.Error("调用蜘蛛 %s 不存在的规则: %s", self.spider.GetName(), ruleName[0])
+		} else {
+			logs.Log.Error("调用蜘蛛 %s 的Aid()时未指定的规则名", self.spider.GetName())
+		}
 		return nil
 	}
-
+	if rule.AidFunc == nil {
+		logs.Log.Error("蜘蛛 %s 的规则 %s 未定义AidFunc", self.spider.GetName(), ruleName[0])
+		return nil
+	}
 	return rule.AidFunc(self, aid)
 }
 
@@ -324,6 +337,10 @@ func (self *Context) Parse(ruleName ...string) *Context {
 	}
 	if !found {
 		self.spider.RuleTree.Root(self)
+		return self
+	}
+	if rule.ParseFunc == nil {
+		logs.Log.Error("蜘蛛 %s 的规则 %s 未定义ParseFunc", self.spider.GetName(), ruleName[0])
 		return self
 	}
 	rule.ParseFunc(self)
@@ -375,7 +392,14 @@ func (self *Context) ResetText(body string) *Context {
 
 // 获取下载错误。
 func (self *Context) GetError() error {
+	// 若已主动终止任务，则崩溃爬虫协程
+	self.spider.tryPanic()
 	return self.err
+}
+
+// 获取日志接口实例。
+func (*Context) Log() logs.Logs {
+	return logs.Log
 }
 
 // 获取蜘蛛名称。
@@ -580,6 +604,8 @@ func (self *Context) initDom() *goquery.Document {
 
 // GetBodyStr returns plain string crawled.
 func (self *Context) initText() {
+	var err error
+
 	// 采用surf内核下载时，尝试自动转码
 	if self.Request.DownloaderID == request.SURF_ID {
 		var contentType, pageEncode string
@@ -602,12 +628,19 @@ func (self *Context) initText() {
 
 		switch pageEncode {
 		// 不做转码处理
-		case "", "utf8", "utf-8", "unicode-1-1-utf-8":
+		case "utf8", "utf-8", "unicode-1-1-utf-8":
 		default:
 			// 指定了编码类型，但不是utf8时，自动转码为utf8
 			// get converter to utf-8
 			// Charset auto determine. Use golang.org/x/net/html/charset. Get response body and change it to utf-8
-			destReader, err := charset.NewReaderLabel(pageEncode, self.Response.Body)
+			var destReader io.Reader
+
+			if len(pageEncode) == 0 {
+				destReader, err = charset.NewReader(self.Response.Body, "")
+			} else {
+				destReader, err = charset.NewReaderLabel(pageEncode, self.Response.Body)
+			}
+
 			if err == nil {
 				self.text, err = ioutil.ReadAll(destReader)
 				if err == nil {
@@ -623,7 +656,6 @@ func (self *Context) initText() {
 	}
 
 	// 不做转码处理
-	var err error
 	self.text, err = ioutil.ReadAll(self.Response.Body)
 	self.Response.Body.Close()
 	if err != nil {

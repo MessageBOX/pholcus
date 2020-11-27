@@ -1,57 +1,64 @@
-# pholcus    [![GoDoc](https://godoc.org/github.com/tsuna/gohbase?status.png)](https://godoc.org/github.com/henrylee2cn/pholcus) [![GitHub release](https://img.shields.io/github/release/henrylee2cn/pholcus.svg)](https://github.com/henrylee2cn/pholcus/releases)
+# Pholcus [![GitHub release](https://img.shields.io/github/release/henrylee2cn/pholcus.svg?style=flat-square)](https://github.com/henrylee2cn/pholcus/releases) [![report card](https://goreportcard.com/badge/github.com/henrylee2cn/pholcus?style=flat-square)](http://goreportcard.com/report/henrylee2cn/pholcus) [![github issues](https://img.shields.io/github/issues/henrylee2cn/pholcus.svg?style=flat-square)](https://github.com/henrylee2cn/pholcus/issues?q=is%3Aopen+is%3Aissue) [![github closed issues](https://img.shields.io/github/issues-closed-raw/henrylee2cn/pholcus.svg?style=flat-square)](https://github.com/henrylee2cn/pholcus/issues?q=is%3Aissue+is%3Aclosed) [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/henrylee2cn/pholcus)
 
-Pholcus（幽灵蛛）是一款纯Go语言编写的高并发、分布式、重量级爬虫软件，支持单机、服务端、客户端三种运行模式，拥有Web、GUI、命令行三种操作界面；规则简单灵活、批量任务并发、输出方式丰富（mysql/mongodb/csv/excel等）、有大量Demo共享；同时她还支持横纵向两种抓取模式，支持模拟登录和任务暂停、取消等一系列高级功能。
+Pholcus（幽灵蛛）是一款纯 Go 语言编写的支持分布式的高并发爬虫软件，仅用于编程学习与研究。
+
+它支持单机、服务端、客户端三种运行模式，拥有Web、GUI、命令行三种操作界面；规则简单灵活、批量任务并发、输出方式丰富（mysql/mongodb/kafka/csv/excel等）；另外它还支持横纵向两种抓取模式，支持模拟登录和任务暂停、取消等一系列高级功能。
 
 ![image](https://github.com/henrylee2cn/pholcus/raw/master/doc/icon.png)
 
-* 官方QQ群：Go大数据 42731170    [![Go大数据群](http://pub.idqqimg.com/wpa/images/group.png)](http://jq.qq.com/?_wv=1027&k=XnGGnc)
+## 免责声明
 
-#### 爬虫原理
+**本软件仅用于学术研究，使用者需遵守其所在地的相关法律法规，请勿用于非法用途！！
+如在中国大陆频频爆出爬虫开发者涉诉与违规的[新闻](https://github.com/HiddenStrawberry/Crawler_Illegal_Cases_In_China)。<br>
+<b>郑重声明</b>：因违法违规使用造成的一切后果，使用者自行承担！！**
 
-![image](https://github.com/henrylee2cn/pholcus/raw/master/doc/project.png)
+## 爬虫原理
 
-
-#### 框架特点
- 1. Pholcus（幽灵蛛）以高效率，高灵活性和人性化设计为开发的指导思想；
-
- 2. 支持单机、服务端、客户端三种运行模式，即支持分布式布局，适用于各种业务需要；
- 
- 3. 支持Web、GUI、命令行三种操作界面，适用于各种运行环境；
- 
- 4. 支持mysql/mongodb/csv/excel等多种输出方式，且可以轻松添加更多输出方式；
- 
- 5. 采用surfer高并发下载器，支持 GET/POST/HEAD 方法及 http/https 协议，同时支持固定UserAgent自动保存cookie与随机大量UserAgent禁用cookie两种模式，高度模拟浏览器行为，可实现模拟登录等功能；
-
- 6. 服务器/客户端模式采用teleport高并发socketAPI框架，全双工长连接通信，内部数据传输格式为JSON；
- 
- 7. 对采集规则进行了精心设计，支持静态编译与动态JS两种规则，灵活简单且有大量Demo，写规则就是这么轻松；
- 
- 8. 支持横纵向两种抓取模式，并且支持任务暂停、取消等操作。
+![image](https://github.com/henrylee2cn/pholcus/raw/master/doc/module.png)
 
 &nbsp;
 
-#### 下载安装
+![image](https://github.com/henrylee2cn/pholcus/raw/master/doc/project.png)
 
-1. 下载第三方依赖包源码，放至 GOPATH/src 目录下 [[点击下载 ZIP]](https://github.com/pholcus/dependent/archive/master.zip)
+&nbsp;
 
-2. 下载更新源码，命令行如下
+![image](https://github.com/henrylee2cn/pholcus/raw/master/doc/distribute.png)
+
+
+## 框架特点
+
+- 为具备一定Go或JS编程基础的用户提供只需关注规则定制、功能完备的重量级爬虫工具；
+- 支持单机、服务端、客户端三种运行模式；
+- GUI(Windows)、Web、Cmd 三种操作界面，可通过参数控制打开方式；
+- 支持状态控制，如暂停、恢复、停止等；
+- 可控制采集量；
+- 可控制并发协程数；
+- 支持多采集任务并发执行；
+- 支持代理IP列表，可控制更换频率；
+- 支持采集过程随机停歇，模拟人工行为；
+- 根据规则需求，提供自定义配置输入接口
+- 有mysql、mongodb、kafka、csv、excel、原文件下载共五种输出方式；
+- 支持分批输出，且每批数量可控；
+- 支持静态Go和动态JS两种采集规则，支持横纵向两种抓取模式，且有大量Demo；
+- 持久化成功记录，便于自动去重；
+- 序列化失败请求，支持反序列化自动重载处理；
+- 采用surfer高并发下载器，支持 GET/POST/HEAD 方法及 http/https 协议，同时支持固定UserAgent自动保存cookie与随机大量UserAgent禁用cookie两种模式，高度模拟浏览器行为，可实现模拟登录等功能；
+- 服务器/客户端模式采用Teleport高并发SocketAPI框架，全双工长连接通信，内部数据传输格式为JSON。
+
+## 下载安装
+
 ```
 go get -u -v github.com/henrylee2cn/pholcus
 ```
 
-备注：Pholcus公开维护的spider规则库地址 <https://github.com/pholcus/spider_lib>
-
-&nbsp;
-
-#### 创建项目
+## 创建项目
 
 ```
 package main
 
 import (
     "github.com/henrylee2cn/pholcus/exec"
-    _ "github.com/pholcus/spider_lib" // 此为公开维护的spider规则库
-    // _ "spider_lib_pte" // 同样你也可以自由添加自己的规则库
+    // _ "pholcus_lib_pte" // 同样你也可以自由添加自己的规则库
 )
 
 func main() {
@@ -63,7 +70,7 @@ func main() {
 ```
 &nbsp;
 
-#### 编译运行
+## 编译运行
 正常编译方法
 ```
 cd {{replace your gopath}}/src/github.com/henrylee2cn/pholcus
@@ -72,7 +79,7 @@ go install 或者 go build
 Windows下隐藏cmd窗口的编译方法
 ```
 cd {{replace your gopath}}/src/github.com/henrylee2cn/pholcus
-go install -ldflags="-H windowsgui" 或者 go build -ldflags="-H windowsgui"
+go install -ldflags="-H=windowsgui -linkmode=internal" 或者 go build -ldflags="-H=windowsgui -linkmode=internal"
 ```
 查看可选参数: 
 ```
@@ -84,7 +91,7 @@ pholcus -h
 
 > *<font size="2">Web版操作界面截图如下：*
 
-![image](https://github.com/henrylee2cn/pholcus/raw/master/doc/webshow_1.jpg)
+![image](https://github.com/henrylee2cn/pholcus/raw/master/doc/webshow_1.png)
 
 &nbsp;
 
@@ -103,7 +110,11 @@ $ pholcus -_ui=cmd -a_mode=0 -c_spider=3,8 -a_outtype=csv -a_thread=20 -a_docker
 
 &nbsp;
 
-#### 运行时目录文件
+*注意：*Mac下如使用代理IP功能，请务必获取root用户权限，否则无法通过`ping`获取可以代理！
+
+&nbsp;
+
+## 运行时目录文件
 
 ```
 ├─pholcus 软件
@@ -131,7 +142,7 @@ $ pholcus -_ui=cmd -a_mode=0 -c_spider=3,8 -a_outtype=csv -a_thread=20 -a_docker
 
 &nbsp;
 
-#### 动态规则示例
+## 动态规则示例
 
 特点：动态加载规则，无需重新编译软件，书写简单，添加自由，适用于轻量级的采集项目。
 <br/>
@@ -139,11 +150,12 @@ xxx.pholcus.html
 ```
 <Spider>
     <Name>HTML动态规则示例</Name>
-    <DeScription>HTML动态规则示例 [Auto Page] [http://xxx.xxx.xxx]</DeScription>
-    <EnableKeyin>false</EnableKeyin>
-    <EnableCookie>true</EnableCookie>
-    <EnableLimit>false</EnableLimit>
+    <Description>HTML动态规则示例 [Auto Page] [http://xxx.xxx.xxx]</Description>
     <Pausetime>300</Pausetime>
+    <EnableLimit>false</EnableLimit>
+    <EnableCookie>true</EnableCookie>
+    <EnableKeyin>false</EnableKeyin>
+    <NotDefaultField>false</NotDefaultField>
     <Namespace>
         <Script></Script>
     </Namespace>
@@ -206,7 +218,7 @@ xxx.pholcus.html
 </Spider>
 ```
 
-#### 静态规则示例
+## 静态规则示例
 
 特点：随软件一同编译，定制性更强，效率更高，适用于重量级的采集项目。
 <br/>
@@ -214,58 +226,79 @@ xxx.go
 
 ```
 func init() {
-    Lewa.Register()
-}
-
-var Lewa = &Spider{
-    Name:        "静态规则示例",
-    Description: "静态规则示例 [Auto Page] [http://xxx.xxx.xxx]",
-    // Pausetime: 300,
-    // Keyin:   KEYIN,
-    // Limit:   LIMIT,
-    EnableCookie: true,
-    RuleTree: &RuleTree{
-        Root: func(ctx *Context) {
-            ctx.AddQueue(&request.Request{Url: "http://xxx.xxx.xxx", Rule: "登录页"})
+    Spider{
+        Name:        "静态规则示例",
+        Description: "静态规则示例 [Auto Page] [http://xxx.xxx.xxx]",
+        // Pausetime: 300,
+        // Limit:   LIMIT,
+        // Keyin:   KEYIN,
+        EnableCookie:    true,
+        NotDefaultField: false,
+        Namespace:       nil,
+        SubNamespace:    nil,
+        RuleTree: &RuleTree{
+            Root: func(ctx *Context) {
+                ctx.AddQueue(&request.Request{Url: "http://xxx.xxx.xxx", Rule: "登录页"})
+            },
+            Trunk: map[string]*Rule{
+                "登录页": {
+                    ParseFunc: func(ctx *Context) {
+                        ctx.AddQueue(&request.Request{
+                            Url:      "http://xxx.xxx.xxx",
+                            Rule:     "登录后",
+                            Method:   "POST",
+                            PostData: "username=123456@qq.com&password=123456&login_btn=login_btn&submit=login_btn",
+                        })
+                    },
+                },
+                "登录后": {
+                    ParseFunc: func(ctx *Context) {
+                        ctx.Output(map[string]interface{}{
+                            "全部": ctx.GetText(),
+                        })
+                        ctx.AddQueue(&request.Request{
+                            Url:    "http://accounts.xxx.xxx/member",
+                            Rule:   "个人中心",
+                            Header: http.Header{"Referer": []string{ctx.GetUrl()}},
+                        })
+                    },
+                },
+                "个人中心": {
+                    ParseFunc: func(ctx *Context) {
+                        ctx.Output(map[string]interface{}{
+                            "全部": ctx.GetText(),
+                        })
+                    },
+                },
+            },
         },
-        Trunk: map[string]*Rule{
-            "登录页": {
-                ParseFunc: func(ctx *Context) {
-                    ctx.AddQueue(&request.Request{
-                        Url:    "http://xxx.xxx.xxx",
-                        Rule:   "登录后",
-                        Method: "POST",
-                        PostData: "username=123456@qq.com&password=123456&login_btn=login_btn&submit=login_btn",
-                   })
-                },
-            },
-            "登录后": {
-                ParseFunc: func(ctx *Context) {
-                    ctx.Output(map[string]interface{}{
-                        "全部": ctx.GetText(),
-                    })
-                    ctx.AddQueue(&request.Request{
-                        Url:    "http://accounts.xxx.xxx/member",
-                        Rule:   "个人中心",
-                        Header: http.Header{"Referer": []string{ctx.GetUrl()}},
-                    })
-                },
-            },
-            "个人中心": {
-                ParseFunc: func(ctx *Context) {
-                    ctx.Output(map[string]interface{}{
-                        "全部": ctx.GetText(),
-                    })
-                },
-            },
-        },
-    },
+    }.Register()
 }
 ```
 
 &nbsp;
 
-#### FAQ
+## 代理IP
+
+- 代理IP写在`/pholcus_pkg/proxy.lib`文件，格式如下，一行一个IP：
+
+```
+http://183.141.168.95:3128
+https://60.13.146.92:8088
+http://59.59.4.22:8090
+https://180.119.78.78:8090
+https://222.178.56.73:8118
+http://115.228.57.254:3128
+http://49.84.106.160:9000
+```
+
+- 在操作界面选择“代理IP更换频率”或命令行设置`-a_proxyminute`参数，进行使用
+
+- *注意：*Mac下如使用代理IP功能，请务必获取root用户权限，否则无法通过ping获取可以代理！
+
+&nbsp;
+
+## FAQ
 
 请求队列中，重复的URL是否会自动去重？
 ```
@@ -288,44 +321,3 @@ url页面内容的更新，框架无法直接支持判断，但是用户可以�
 在当前任务正常结束后，将自动添加至下载队列，再次进行下载。如果依然有没下载成功的，则保存至失败历史记录。  
 当下次执行该条爬虫规则时，可通过选择继承历史失败记录，把这些失败请求自动加入defer性质的特殊队列……（后面是重复步骤）
 ```
-
-&nbsp;
-
-#### 贡献者名单
-
-贡献者                          |贡献内容
---------------------------------|--------------------------------------------------
-henrylee2cn|软件作者 
-kas|surfer下载器中phantomjs内核 
-wang898jian|参与完全手册编写 
-
-
-&nbsp;
-
-#### 第三方依赖包
-
-```
-go get github.com/pholcus/spider_lib
-go get github.com/henrylee2cn/teleport
-go get github.com/PuerkitoBio/goquery
-go get github.com/robertkrimen/otto
-go get github.com/andybalholm/cascadia
-go get github.com/lxn/walk
-go get github.com/lxn/win
-go get github.com/go-sql-driver/mysql
-go get github.com/jteeuwen/go-bindata/...
-go get github.com/elazarl/go-bindata-assetfs/...
-go get gopkg.in/mgo.v2
-<以下需翻墙下载>
-go get golang.org/x/net/html
-go get golang.org/x/text/encoding
-go get golang.org/x/text/transform
-```
-> *<font size="2">（在此感谢以上开源项目的支持！）</font>*
-
-
-&nbsp;
-
-#### 开源协议
-
-Pholcus（幽灵蛛）项目采用商业应用友好的[Apache License v2](https://github.com/henrylee2cn/pholcus/raw/master/doc/license.txt).发布

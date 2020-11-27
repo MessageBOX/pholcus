@@ -1,6 +1,8 @@
 package request
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -13,53 +15,29 @@ import (
 
 // Request represents object waiting for being crawled.
 type Request struct {
-	Spider string // *规则中无需手动指定
-
-	Url  string // *必须设置
-	Rule string // *必须设置
-
-	// GET POST POST-M HEAD
-	Method string
-	// http header
-	Header http.Header
-	// 是否使用cookies，在Spider的EnableCookie设置
-	EnableCookie bool
-	// POST values
-	PostData string
-	// dial tcp: i/o timeout
-	DialTimeout time.Duration
-	// WSARecv tcp: i/o timeout
-	ConnTimeout time.Duration
-	// the max times of download
-	TryTimes int
-	// how long pause when retry
-	RetryPause time.Duration
-	// max redirect times
-	// when RedirectTimes equal 0, redirect times is ∞
-	// when RedirectTimes less than 0, redirect times is 0
-	RedirectTimes int
-	// the download ProxyHost
-	Proxy string
-
-	// 标记临时数据，通过temp[x]==nil判断是否有值存入，所以请存入带类型的值，如[]int(nil)等
-	Temp Temp
-
-	// 记录Temp中对应的临时数据是否是以json格式存储
-	// 由程序自动控制，不可人为指定
-	TempIsJson map[string]bool
-
-	// 即将加入哪个优先级的队列当中，默认为0，最小优先级为0
-	Priority int
-
-	// 是否允许重复下载
-	Reloadable bool
-
-	// 指定下载器ID
-	// 0为Surf高并发下载器，各种控制功能齐全
-	// 1为PhantomJS下载器，特点破防力强，速度慢，低并发
+	Spider        string          //规则名，自动设置，禁止人为填写
+	Url           string          //目标URL，必须设置
+	Rule          string          //用于解析响应的规则节点名，必须设置
+	Method        string          //GET POST POST-M HEAD
+	Header        http.Header     //请求头信息
+	EnableCookie  bool            //是否使用cookies，在Spider的EnableCookie设置
+	PostData      string          //POST values
+	DialTimeout   time.Duration   //创建连接超时 dial tcp: i/o timeout
+	ConnTimeout   time.Duration   //连接状态超时 WSARecv tcp: i/o timeout
+	TryTimes      int             //尝试下载的最大次数
+	RetryPause    time.Duration   //下载失败后，下次尝试下载的等待时间
+	RedirectTimes int             //重定向的最大次数，为0时不限，小于0时禁止重定向
+	Temp          Temp            //临时数据
+	TempIsJson    map[string]bool //将Temp中以JSON存储的字段标记为true，自动设置，禁止人为填写
+	Priority      int             //指定调度优先级，默认为0（最小优先级为0）
+	Reloadable    bool            //是否允许重复该链接下载
+	//Surfer下载器内核ID
+	//0为Surf高并发下载器，各种控制功能齐全
+	//1为PhantomJS下载器，特点破防力强，速度慢，低并发
 	DownloaderID int
 
-	unique string
+	proxy  string //当用户界面设置可使用代理IP时，自动设置代理
+	unique string //ID
 	lock   sync.RWMutex
 }
 
@@ -92,9 +70,8 @@ func (self *Request) Prepare() error {
 	URL, err := url.Parse(self.Url)
 	if err != nil {
 		return err
-	} else {
-		self.Url = URL.String()
 	}
+	self.Url = URL.String()
 
 	if self.Method == "" {
 		self.Method = "GET"
@@ -163,7 +140,8 @@ func (self *Request) Serialize() string {
 // 请求的唯一识别码
 func (self *Request) Unique() string {
 	if self.unique == "" {
-		self.unique = util.MakeHash(self.Spider + self.Rule + self.Url + self.Method)
+		block := md5.Sum([]byte(self.Spider + self.Rule + self.Url + self.Method))
+		self.unique = hex.EncodeToString(block[:])
 	}
 	return self.unique
 }
@@ -181,10 +159,12 @@ func (self *Request) GetUrl() string {
 	return self.Url
 }
 
+// 获取Http请求的方法名称 (注意这里不是指Http GET方法)
 func (self *Request) GetMethod() string {
 	return self.Method
 }
 
+// 设定Http请求方法的类型
 func (self *Request) SetMethod(method string) *Request {
 	self.Method = strings.ToUpper(method)
 	return self
@@ -257,11 +237,11 @@ func (self *Request) GetRetryPause() time.Duration {
 }
 
 func (self *Request) GetProxy() string {
-	return self.Proxy
+	return self.proxy
 }
 
 func (self *Request) SetProxy(proxy string) *Request {
-	self.Proxy = proxy
+	self.proxy = proxy
 	return self
 }
 

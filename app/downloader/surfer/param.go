@@ -57,6 +57,9 @@ func NewParam(req Request) (param *Param, err error) {
 	}
 
 	param.header = req.GetHeader()
+	if param.header == nil {
+		param.header = make(http.Header)
+	}
 
 	switch method := strings.ToUpper(req.GetMethod()); method {
 	case "GET", "HEAD":
@@ -117,6 +120,10 @@ func (self *Param) writeback(resp *http.Response) *http.Response {
 		resp.Request = new(http.Request)
 	} else if resp.Request == nil {
 		resp.Request = new(http.Request)
+	}
+
+	if resp.Header == nil {
+		resp.Header = make(http.Header)
 	}
 
 	resp.Request.Method = self.method
